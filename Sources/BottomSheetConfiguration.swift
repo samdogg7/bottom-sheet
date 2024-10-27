@@ -1,5 +1,5 @@
 //
-//  BottomSheetViewConfiguration.swift
+//  BottomSheetConfiguration.swift
 //  BottomSheet
 //
 //  Created by Wojciech Konury on 23/10/2024.
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @Observable
-class BottomSheetViewConfiguration {
+class BottomSheetConfiguration {
     var sheetColor: Color?
     var dragIndicator: DragIndicator
     var selectedDetent: Detent
@@ -49,7 +49,7 @@ class BottomSheetViewConfiguration {
     }
 }
 
-extension BottomSheetViewConfiguration {
+extension BottomSheetConfiguration {
     struct DragIndicator {
         var isPresented: Bool = false
         var color: Color = .gray

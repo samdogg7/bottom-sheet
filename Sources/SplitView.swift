@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-public struct BottomSheet<Content: View, SheetContent: View>: View {
-    @State var configuration = BottomSheetViewConfiguration()
+public struct SplitView<Content: View, SheetContent: View>: View {
+    @State var configuration = BottomSheetConfiguration()
 
     private let isPresented: Bool
     private let content: Content
@@ -29,7 +29,7 @@ public struct BottomSheet<Content: View, SheetContent: View>: View {
             content
             
             if isPresented {
-                BottomSheetView(
+                BottomSheet(
                     configuration: $configuration,
                     content: sheetContent
                 )
@@ -43,8 +43,8 @@ public extension View {
     func bottomSheet<SheetContent: View>(
         isPresented: Bool = true,
         @ViewBuilder sheetContent: () -> SheetContent
-    ) -> BottomSheet<Self, SheetContent> {
-        BottomSheet(
+    ) -> SplitView<Self, SheetContent> {
+        SplitView(
             isPresented: isPresented,
             content: { self },
             sheetContent: sheetContent
@@ -73,12 +73,13 @@ private struct ExampleView: View {
     var body: some View {
         TabView {
             Tab("Map", systemImage: "map") {
-                Text("Map")
-                    .bottomSheet {
-                        rainbowList
-                    }
-                    .dragIndicatorPresentation(isVisible: true)
-                    .detentsPresentation(detents: [.small, .medium, .large])
+                SplitView {
+                    Text("Map")
+                } sheetContent: {
+                    rainbowList
+                }
+                .dragIndicator(true)
+                .detents([.small, .medium, .large])
             }
 
             Tab("Settings", systemImage: "gear") {

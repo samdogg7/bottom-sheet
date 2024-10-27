@@ -34,20 +34,16 @@ Click Add Package.
 .bottomSheet(isPresented: $showCustomSheet) {
 // Sheet content goes here
 }
-  .detentsPresentation(detents: [.small, .medium, .large]) // configure sheet detents
-  .ignoresSafeAreaEdgesPresentation(nil) // configure safe area edges to ignore
-  .dragIndicatorPresentation(isVisible: true) // display drag indicator
+  .detents([.small, .medium, .large]) // configure sheet detents
+  .dragIndicator(isVisible: true) // display drag indicator
 ```
 
 # Modifiers
-`.detentsPresentation(detents: [Detent])`:
+`.detents([Detent])`:
 Sets the available detents for the enclosing sheet.
 
-`.dragIndicatorPresentation(isVisible: Bool, color: Color = .gray)`:
+`.dragIndicator(isVisible: Bool, color: Color = .gray)`:
 Sets the visibility of the drag indicator on top of a sheet and it's color.
-
-`.ignoresSafeAreaEdgesPresentation(_ edges: Edge.Set?)`:
-Expands the safe area of a sheet.
 
 `.sheetColor(_ color: Color)`:
 Sets sheet's background color.
