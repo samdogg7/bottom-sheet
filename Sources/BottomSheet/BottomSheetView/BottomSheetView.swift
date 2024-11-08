@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct BottomSheetView<Content: View>: View {
+    @State private var contentHeight: CGFloat = 0.0
     @State private var sheetHeight: CGFloat = 0.0
     @State private var enableDragGesture = true
 
@@ -44,8 +45,6 @@ struct BottomSheetView<Content: View>: View {
     
     var body: some View {
         GeometryReader { geometry in
-            let screenHeight = geometry.size.height
-
             VStack {
                 Spacer()
                 
@@ -73,21 +72,25 @@ struct BottomSheetView<Content: View>: View {
                     .scrollDisabled(enableDragGesture)
                     .onScrollGeometryChange(for: Double.self) { geometry in
                         geometry.contentOffset.y
-                    } action: { _, newValue in
-                        enableDragGesture = newValue <= 0
+                    } action: { _, offset in
+                        enableDragGesture = offset <= 0
                     }
                     .simultaneousGesture(
                         DragGesture()
-                        .onChanged({ gesture in
-                            dragGestureOnChanged(gesture, screenHeight: screenHeight)
+                        .onChanged({ value in
+                            dragGestureOnChanged(value)
                         })
-                        .onEnded({ gesture in
-                            dragGestureOnEnded(gesture, screenHeight: screenHeight)
+                        .onEnded({ value in
+                            dragGestureOnEnded(value)
                         })
                     )
             }
+            .onChange(of: geometry.size.height, { _, newValue in
+                contentHeight = newValue
+            })
             .onAppear {
-                sheetHeight = selectedDetent.fraction * screenHeight
+                contentHeight = geometry.size.height
+                sheetHeight = selectedDetent.fraction * contentHeight
             }
         }.ignoresSafeArea(edges: configuration.ignoredEdges)
     }
@@ -103,46 +106,37 @@ extension BottomSheetView {
         detents.map(\.fraction).min() ?? 1.0
     }
 
-    func dragGestureOnChanged(_ gesture: DragGesture.Value, screenHeight: CGFloat) {
+    func dragGestureOnChanged(_ gesture: DragGesture.Value) {
         guard enableDragGesture else { return }
 
         let desiredHeight = sheetHeight - gesture.translation.height
 
-        guard desiredHeight != sheetHeight else { return }
-
-        let minHeight = minHeight(for: screenHeight)
-        let maxHeight = maxFraction * screenHeight
+        let minHeight = minFraction * contentHeight
+        let maxHeight = maxFraction * contentHeight
 
         // Clamp desired height within bounds
         let clampedDesiredHeight = max(minHeight, min(desiredHeight, maxHeight))
-        
-        updateSheetHeight(to: clampedDesiredHeight, screenHeight: screenHeight)
+
+        updateSheetHeight(to: clampedDesiredHeight)
     }
     
-    func dragGestureOnEnded(_ gesture: DragGesture.Value, screenHeight: CGFloat) {
+    func dragGestureOnEnded(_ gesture: DragGesture.Value) {
         // Calculate the current fraction of the screen height
-        let currentFraction = sheetHeight / screenHeight
+        let currentFraction = sheetHeight / contentHeight
 
         // Find the closest detent based on the current fraction
-        let closestDetent = detents.min(by: {
-            abs($0.fraction - currentFraction) < abs($1.fraction - currentFraction) 
+        self.selectedDetent = detents.min(by: {
+            abs($0.fraction - currentFraction) < abs($1.fraction - currentFraction)
         }) ?? .small
 
         // Calculate the desired height for the closest detent
-        let desiredHeight = screenHeight * closestDetent.fraction
+        let desiredHeight = contentHeight * selectedDetent.fraction
 
-        // Update the selected detent and animate to the desired height
-        self.selectedDetent = closestDetent
-
-        updateSheetHeight(to: desiredHeight, screenHeight: screenHeight)
+        updateSheetHeight(to: desiredHeight)
     }
 
-    func minHeight(for screenHeight: CGFloat) -> CGFloat {
-        minFraction * screenHeight
-    }
-
-    private func updateSheetHeight(to desiredHeight: CGFloat, screenHeight: CGFloat) {
-        let maxHeight = maxFraction * screenHeight
+    private func updateSheetHeight(to desiredHeight: CGFloat) {
+        let maxHeight = maxFraction * contentHeight
         let previousSheetHeight = sheetHeight
         
         self.sheetHeight = desiredHeight

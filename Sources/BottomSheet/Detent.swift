@@ -33,15 +33,3 @@ public enum Detent: Equatable, Comparable {
         return lhs.fraction < rhs.fraction
     }
 }
-
-extension Array where Element == Detent {
-
-    var largest: Detent? {
-        self.max(by: { $0 < $1 })
-    }
-
-    var smallest: Detent? {
-        self.min(by: { $0 < $1 })
-    }
-
-}
